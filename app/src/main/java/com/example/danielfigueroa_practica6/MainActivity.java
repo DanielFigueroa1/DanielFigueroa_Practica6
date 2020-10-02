@@ -2,9 +2,14 @@ package com.example.danielfigueroa_practica6;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
+
+import com.example.danielfigueroa_practica6.model.Usuario;
+import com.google.gson.Gson;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -31,6 +36,41 @@ public class MainActivity extends AppCompatActivity {
         contrasena = findViewById(R.id.contrasena);
         ingresar = findViewById(R.id.ingresar);
 
+
+        ingresar.setOnClickListener( //metodo onclick con parametro
+
+                (v) -> {
+
+                    Gson gson = new Gson(); //crea json
+
+
+                    String nombreUsuario = usuario.getText().toString();//datos ingresados
+                    String contrasenaUsuario = contrasena.getText().toString();
+
+                    Usuario obj= new Usuario(nombreUsuario, contrasenaUsuario); //creo un objeto cordenada que serializo
+
+                    String json = gson.toJson(obj);
+                    //Log.e(">>>","funciono"+json);
+
+                    new Thread(
+                            ()->{ //metodo run del runable sin parametro
+                                try { //cualquier elemento de network tiene que ir en un hilo
+                                    /*Usar json que es un modelo de usuario, hacer una clase de usuario desde cliente y servidor que sean iguales*/
+                                    //String registro = usuario.getText().toString() + "  " + contrasena.getText().toString(); //atrapar elementos
+
+                                    writer.write(json + "\n"); //enviar el mensaje igual
+                                    writer.flush(); //para que envie la info
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+
+                            }
+                    ).start();
+                    Intent i = new Intent(this, ExitoActivity.class);
+                    startActivity(i);
+                }
+        );
+
         new Thread( //generacion de hilo
                 () -> {
                     try {
@@ -51,6 +91,7 @@ public class MainActivity extends AppCompatActivity {
                             System.out.println("Esperando datos...");
                             String line = reader.readLine(); //llegan los mensajes del servidor
                             System.out.println("Datos recibidos" + line);
+
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -59,23 +100,7 @@ public class MainActivity extends AppCompatActivity {
                 }
         ).start();
 
-        ingresar.setOnClickListener( //metodo onclick con parametro
 
-                (v) -> {
-
-                    new Thread(
-                            ()->{ //metodo run del runable sin parametro
-                                try { //cualquier elemento de network tiene que ir en un hilo
-                                    /*Usar json que es un modelo de usuario, hacer una clase de usuario desde cliente y servidor que sean iguales*/String registro = usuario.getText().toString() + "  " + contrasena.getText().toString(); //atrapar elementos
-                                    writer.write(registro + "\n"); //enviar el mensaje igual
-                                    writer.flush(); //para que envie la info
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
-                            }
-                    ).start();
-                }
-        );
     }
 
 }
